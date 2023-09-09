@@ -23,6 +23,7 @@ Project UID bd3b06d8a60861e18088226c3a1f0595e4426dcf
 
 import sys
 import graph
+import time
 
 
 def pagerank(digraph, num_iterations=40, damping_factor=.85):
@@ -56,16 +57,18 @@ def pagerank(digraph, num_iterations=40, damping_factor=.85):
     """
     # add your code here
     def backlinks_nodes(node_id):
+        ''''given a node_id, returns all the backlink nodes in a list'''
         edges = digraph.edges()
         nodes = []
         for edge in edges:
-            node_from =edge.nodes()[0]
+            node_from = edge.nodes()[0]
             node_to = edge.nodes()[1]
             if node_to.identifier() == node_id:
                 nodes.append(node_from)
         return nodes
     
     def sink_nodes():
+        '''return all the sink node of the graph'''
         nodes = digraph.nodes()
         edges = digraph.edges()
         not_sink_nodes = [edge.nodes()[0] for edge in edges]
@@ -73,17 +76,32 @@ def pagerank(digraph, num_iterations=40, damping_factor=.85):
         return sink_nodes
 
 
-
+    ''''initializing all needed data in order to avoided repeated computation and save time'''
     n = len(digraph)
     pr = {node.identifier() : 1 / len(digraph) for node in digraph.nodes()}
 
+    s_nodes = sink_nodes()   # list with all sink nodes
+
+    backlinks_nodes_dict = {}       # dictionary that contains {node_id : [list of backlink nodes to node_id]}
+    out_degree_dict = {}          # dictionary that contains {node_id : outer degree of node_id}
+    for node in digraph.nodes():
+        backlinks_nodes_dict[node.identifier()] = backlinks_nodes(node.identifier())
+        out_degree_dict[node.identifier()] = digraph.out_degree(node.identifier())
+
+    print('all dataset uploaded')
+    #if isinstance(digraph, graph.DirectedGraph):
+    #    outer_degree_dict = {node.identifier() : digraph.out_degree(node.identifier()) for node in digraph.nodes()}
+    #else: outer_degree_dict = {node.identifier() : digraph.degree(node.identifier()) for node in digraph.nodes()}
+
     for iteration in range(num_iterations):
-        pr_k = {}
+        print("iteration number :", iteration)
+        pr_k = {}       # new iteration values
         for node_id in pr: 
             pr_k[node_id] = ((1 - damping_factor) / n) + damping_factor * \
-                            (sum(pr[node.identifier()] / digraph.out_degree(node.identifier()) for node in backlinks_nodes(node_id)) + \
-                             sum(pr[node.identifier()] for node in sink_nodes()) / n)
-        pr = pr_k
+                            (sum(pr[bl_node.identifier()] / out_degree_dict[bl_node.identifier()] for bl_node in backlinks_nodes_dict[node_id]) + \
+                             sum(pr[s_node.identifier()] for s_node in s_nodes) / n)
+            
+        pr = pr_k       # update old values with new iteration values
 
     return pr
 
@@ -126,7 +144,9 @@ def pagerank_from_csv(node_file, edge_file, num_iterations):
     20 nodes, to standard out. Also prints out the sum of all the
     PageRank values, which should approximate to 1.
     """
+    print("read from csv started")
     rgraph = graph.read_graph_from_csv(node_file, edge_file, True)
+    print("read from csv terminated")
     ranks = pagerank(rgraph, num_iterations)
     print_ranks(ranks)
 

@@ -156,6 +156,9 @@ class Edge:
         
         """
         return self.__node1 == __o.nodes()[0] and self.__node2 == __o.nodes()[1]
+    
+    def __hash__(self) -> int:
+        return hash(self.nodes())
 
 
 class BaseGraph:
@@ -400,11 +403,7 @@ class UndirectedGraph(BaseGraph):
         Raises a GraphError if the node ID is not found.
         """
         # add your code here
-        n = None
-        for node in self.nodes():
-            if node.identifier() == node_id:
-                n = node
-        if n is None: raise GraphError()
+        n = self[node_id]
         
         degree = 0
         for edge in self.edges():
@@ -488,11 +487,7 @@ class DirectedGraph(BaseGraph):
         Raises a GraphError if the node is not found.
         """
         # add your code here
-        n = None
-        for node in self.nodes():
-            if node.identifier() == node_id:
-                n = node
-        if n is None: raise GraphError()
+        n = self[node_id]
         
         degree = 0
         for edge in self.edges():
@@ -505,11 +500,7 @@ class DirectedGraph(BaseGraph):
         Raises a GraphError if the node is not found.
         """
         # add your code here
-        n = None
-        for node in self.nodes():
-            if node.identifier() == node_id:
-                n = node
-        if n is None: raise GraphError()
+        n = self[node_id]
         
         degree = 0
         for edge in self.edges():
