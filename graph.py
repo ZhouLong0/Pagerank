@@ -95,7 +95,7 @@ class Node:
         return self.__identifier == __o.identifier()
     
     def __hash__(self) -> int:
-        return hash(self.identifier)
+        return hash(self.__identifier)
 
 
 
@@ -224,8 +224,8 @@ class BaseGraph:
     def __init__(self):
         """Initialize this graph object."""
         # add your code here
-        self.__nodes = []
-        self.__edges = []
+        self.__nodes = set()
+        self.__edges = set()
 
     def __len__(self):
         """Return the number of nodes in the graph."""
@@ -246,7 +246,7 @@ class BaseGraph:
         if n in self.__nodes:
             raise GraphError()
         
-        self.__nodes.append(n)
+        self.__nodes.add(n)
 
     def node(self, node_id):
         """Return the Node object for the node whose ID is node_id.
@@ -259,13 +259,16 @@ class BaseGraph:
                 return n
         raise GraphError()
 
-    def nodes(self):
+    def nodes(self, s=True):
         """Return a list of all the Nodes in this graph.
 
         The nodes are sorted by increasing node ID.
         """
         # add your code here
-        return sorted(self.__nodes, key=lambda x: x.identifier())
+        if s:
+            return sorted(list(self.__nodes), key=lambda x: x.identifier())
+        else:
+            return list(self.__nodes)
 
     def add_edge(self, node1_id, node2_id, **attributes):
         """Add an edge between the nodes with the given IDs.
@@ -279,7 +282,7 @@ class BaseGraph:
         edge = Edge(n1, n2, **attributes)
         if edge in self.__edges:
             raise GraphError()
-        self.__edges.append(edge)
+        self.__edges.add(edge)
 
     def edge(self, node1_id, node2_id):
         """Return the Edge object for the edge between the given nodes.
@@ -294,14 +297,17 @@ class BaseGraph:
                 return e
         raise GraphError()
 
-    def edges(self):
+    def edges(self, s=True):
         """Return a list of all the edges in this graph.
 
         The edges are sorted in increasing, lexicographic order of the
         IDs of the two nodes in each edge.
         """
         # add your code here
-        return sorted(self.__edges, key=lambda x: x.nodes()[0].identifier() + x.nodes()[1].identifier())
+        if s:
+            return sorted(list(self.__edges), key=lambda x: (x.nodes()[0].identifier(), x.nodes()[0].identifier() + x.nodes()[1].identifier()))
+        else:
+            return list(self.__edges)
 
     def __getitem__(self, key):
         """Return the Node or Edge corresponding to the given key.
@@ -406,8 +412,8 @@ class UndirectedGraph(BaseGraph):
         n = self[node_id]
         
         degree = 0
-        for edge in self.edges():
-            if(edge.nodes()[0] == n): degree += 1
+        for edge in self.edges(s=False):
+            if(edge.nodes()[0].identifier() == node_id): degree += 1
         return degree
     # Add whatever overridden or new methods you need here
     def out_degree(self, node_id):
@@ -503,8 +509,8 @@ class DirectedGraph(BaseGraph):
         n = self[node_id]
         
         degree = 0
-        for edge in self.edges():
-            if(edge.nodes()[0] == n): degree += 1
+        for edge in self.edges(s=False):
+            if(edge.nodes()[0].identifier() == node_id): degree += 1
         return degree
     # Add whatever overridden or new methods you need here
 
